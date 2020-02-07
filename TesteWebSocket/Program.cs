@@ -1,16 +1,20 @@
 ﻿using SuperWebSocket; // Nuget package: SuperWebSocketNETServer v0.8.0
 using System;
+using System.Drawing;
+using System.Drawing.Printing;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
+
 namespace TesteWebSocket
 {
     class Program
     {
         private static WebSocketServer wsServer;
+        private static string mensagem;
 
         /// <summary>
         /// Testar no endereço: https://www.websocket.org/echo.html
@@ -46,12 +50,14 @@ namespace TesteWebSocket
 
         private static void WsServer_NewMessageReceived(WebSocketSession session, string value)
         {
-            Console.WriteLine($"New Message Received: {value}");
+            mensagem = value;
+            Console.WriteLine($"New Message Received: {mensagem}");
 
-            if (value == "Hello server")
+            if (mensagem == "Hello server")
             {
                 session.Send("Hello client");
-                Log(value);
+                Log();
+                Imprimir();
             }
         }
 
@@ -60,7 +66,7 @@ namespace TesteWebSocket
             Console.WriteLine("New Session Connected");
         }
 
-        private static void Log(string value)
+        private static void Log()
         {
             string nomeArquivo = @"C:\Log" + DateTime.Now.ToString("yyyyMMddHHmmss") + ".txt";
 
@@ -69,7 +75,7 @@ namespace TesteWebSocket
 
                 try
                 {
-                    writer.WriteLine(value);
+                    writer.WriteLine(mensagem);
                     Console.WriteLine("Log gravado com sucesso");
                 }
                 catch (Exception ex)
@@ -77,6 +83,23 @@ namespace TesteWebSocket
                     Console.WriteLine("Erro ao gravar o log: " + ex);
                 }
             }
+        }
+
+        private static void Imprimir()
+        {
+            PrintDocument doc = new PrintDocument();
+            if (doc.PrinterSettings.PrinterName != null)
+            {
+                
+                doc.PrintPage += new PrintPageEventHandler(doc_PrintPage);
+                //doc.Print();
+            }
+        }
+
+        private static void doc_PrintPage(object sender, PrintPageEventArgs e)
+        {
+            e.Graphics.DrawString(mensagem, SystemFonts.DefaultFont, Brushes.Black, new PointF(100f, 100f));
+            e.HasMorePages = false;
         }
     }
 }
